@@ -142,12 +142,11 @@ class MovieController {
       });
 
       if (!movie) {
-        return res.status(404).json({ message: 'Movie not found' });
+        throw {name:"NotFound", message: 'Movie not found' };
       }
 
       res.status(200).json(movie);
     } catch (error) {
-      console.log(error)
       next(error);
     }
   }
@@ -172,11 +171,9 @@ class MovieController {
           - Response should be pure HTML only (suitable to paste into an HTML page)
         `
       });
-      console.dir(response, { depth: null })
 
       res.status(200).json({ answer:response.text });
     } catch (error) {
-      console.error(error);
       next(error);
     }
   }
