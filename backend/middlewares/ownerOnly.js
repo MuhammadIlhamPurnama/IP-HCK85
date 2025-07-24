@@ -4,7 +4,6 @@ async function ownerOnly(req, res, next) {
   try {
     const { id } = req.params
     const thread = await Thread.findByPk(id)
-    console.log(thread)
     if (!thread) {
       return res.status(404).json({ message: 'Thread not found' })
     }
