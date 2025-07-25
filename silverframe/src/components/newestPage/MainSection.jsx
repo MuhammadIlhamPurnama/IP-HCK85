@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { NavLink } from 'react-router'
 import { useSelector, useDispatch } from 'react-redux'
 import { fetchNewestMovies } from '../../store/newestSlice'
+import MovieCard from '../global/MovieCard'
 
 
 const MainSection = () => {
@@ -21,17 +22,7 @@ const MainSection = () => {
       <h2 className="text-3xl font-bold text-white mb-8">Newest Movies</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 w-full max-w-5xl">
         {movies.map((movie, idx) => (
-          <NavLink
-            to={`/detail/${movie.id}`}
-            key={idx}
-            className="bg-gray-900 rounded-2xl shadow-lg overflow-hidden flex flex-col items-center transform transition duration-300 hover:scale-105 hover:z-10"
-          >
-            <img
-              src={movie.poster_path}
-              alt={movie.original_title}
-              className="w-full h-80 object-cover"
-            />
-          </NavLink>
+          <MovieCard movie={movie} idx={idx}/>
         ))}
       </div>
       <button
