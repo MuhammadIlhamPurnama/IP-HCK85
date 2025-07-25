@@ -1,8 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { NavLink, useLocation, useNavigate } from 'react-router'
 
 const Navbar = () => {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const isPopular = location.pathname === '/popular'
+
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [avatarOpen, setAvatarOpen] = useState(false)
+  const avatarRef = useRef(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -12,15 +19,26 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Handle outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (avatarRef.current && !avatarRef.current.contains(e.target)) {
+        setAvatarOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   return (
     <nav
       className={`fixed top-0 left-0 w-full z-50 transition-colors duration-300 
-        ${scrolled ? 'bg-black' : 'bg-black/0'}
+        ${isPopular ? 'bg-gray-600/30' : scrolled ? 'bg-black' : 'bg-black/0'}
         flex items-center justify-between px-6 md:px-10 h-16`}
     >
-      <div className="text-2xl font-bold text-gray-300 tracking-wider">Silver Frame</div>
-      
-      {/* Hamburger button */}
+      <NavLink to='/' className="text-2xl font-bold text-gray-300 tracking-wider">Silver Frame</NavLink>
+
+      {/* Hamburger */}
       <button
         className="md:hidden text-white text-3xl focus:outline-none"
         onClick={() => setMenuOpen(!menuOpen)}
@@ -29,46 +47,60 @@ const Navbar = () => {
         {menuOpen ? '✖' : '☰'}
       </button>
 
-      {/* Menu Desktop */}
+      {/* Desktop Menu */}
       <ul className="hidden md:flex gap-6 text-white font-medium">
-        <li className="cursor-pointer">Home</li>
-        <li className="cursor-pointer">Series</li>
-        <li className="cursor-pointer">Films</li>
-        <li className="cursor-pointer">Games</li>
-        <li className="cursor-pointer">New &amp; Popular</li>
-        <li className="cursor-pointer">My List</li>
-        <li className="cursor-pointer">Browse by Language</li>
+        <li><NavLink to="/popular">Popular</NavLink></li>
+        <li><NavLink to="/newest">Newest</NavLink></li>
+        <li><NavLink to="/thread">Thread</NavLink></li>
+        <li><NavLink to="/ai-assistant">AI Assistant</NavLink></li>
+        <li><NavLink to="/Infographic">Infographic</NavLink></li>
       </ul>
-      <div className="hidden md:flex items-center gap-5 text-white">
-        <span className="text-lg cursor-pointer">🔍</span>
-        <span className="cursor-pointer">Kids</span>
-        <span className="relative cursor-pointer">
-          🔔
-          <span className="absolute -top-2 -right-2 bg-red-600 text-xs rounded-full px-1">1</span>
+
+      {/* Avatar Dropdown (Desktop) */}
+      <div className="hidden md:flex items-center text-white relative" ref={avatarRef}>
+        <span
+          onClick={() => setAvatarOpen(prev => !prev)}
+          className="text-2xl cursor-pointer"
+        >
+          🧑🏻
         </span>
-        <span className="text-2xl cursor-pointer">😊</span>
+
+        {avatarOpen && (
+          <div className="absolute right-0 top-full mt-2 bg-white text-black rounded shadow-lg min-w-[120px] py-2 z-50">
+            <button
+              onClick={() => {
+                localStorage.removeItem('access_token')
+                navigate('/login')
+              }}
+              className="block w-full text-left px-4 py-2 hover:bg-gray-200"
+            >
+              Logout
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Dropdown Mobile */}
+      {/* Mobile Dropdown */}
       {menuOpen && (
         <div className="absolute top-16 left-0 w-full bg-black/90 flex flex-col items-center py-4 gap-4 md:hidden z-50">
           <ul className="flex flex-col gap-4 text-white font-medium">
-            <li className="cursor-pointer">Home</li>
-            <li className="cursor-pointer">Series</li>
-            <li className="cursor-pointer">Films</li>
-            <li className="cursor-pointer">Games</li>
-            <li className="cursor-pointer">New &amp; Popular</li>
-            <li className="cursor-pointer">My List</li>
-            <li className="cursor-pointer">Browse by Language</li>
+            <li><NavLink to="/">Home</NavLink></li>
+            <li><NavLink to="/popular">Popular</NavLink></li>
+            <li><NavLink to="/newest">Newest</NavLink></li>
+            <li><NavLink to="/thread">Thread</NavLink></li>
+            <li><NavLink to="/ai-assistant">AI Assistant</NavLink></li>
+            <li><NavLink to="/Infographic">Infographic</NavLink></li>
           </ul>
           <div className="flex items-center gap-5 text-white mt-2">
-            <span className="text-lg cursor-pointer">🔍</span>
-            <span className="cursor-pointer">Kids</span>
-            <span className="relative cursor-pointer">
-              🔔
-              <span className="absolute -top-2 -right-2 bg-red-600 text-xs rounded-full px-1">1</span>
+            <span
+              onClick={() => {
+                localStorage.removeItem('access_token')
+                navigate('/login')
+              }}
+              className="text-xl cursor-pointer"
+            >
+              Logout
             </span>
-            <span className="text-2xl cursor-pointer">😊</span>
           </div>
         </div>
       )}
