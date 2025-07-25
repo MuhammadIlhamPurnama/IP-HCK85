@@ -22,6 +22,7 @@ class MovieController {
         offset,
         where: {},
         order: [],
+        include: [Genre]
       };
 
       // === SORT ===

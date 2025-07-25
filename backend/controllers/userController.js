@@ -82,6 +82,8 @@ class UserController {
         }
       })
 
+      created ? sendEmail(user.email) : null
+
       // console.log(user, created, "<<< user created?");
       // bikin access token
       const access_token = signToken({ id: user.id })
