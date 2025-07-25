@@ -1,47 +1,30 @@
 import React, { useEffect, useState } from 'react'
-
-const slides = [
-  {
-    title: 'MAGIC SLIDER',
-    highlight: 'PLANT',
-    desc: 'Nikmati keindahan tanaman dengan slider interaktif dan visual memukau.',
-    bg: 'https://image.tmdb.org/t/p/w780/7HqLLVjdjhXS0Qoz1SgZofhkIpE.jpg',
-    cards: [
-      'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80',
-      'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80',
-      'https://image.tmdb.org/t/p/w500/q5pXRYTycaeW6dEgsCrd4mYPmxM.jpg',
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
-    ]
-  },
-  {
-    title: 'MAGIC SLIDER',
-    highlight: 'SUNSET',
-    desc: 'Rasakan suasana senja yang menenangkan dengan koleksi gambar sunset.',
-    bg: 'https://images.unsplash.com/photo-1501973801540-537f08ccae7b?auto=format&fit=crop&w=1200&q=80',
-    cards: [
-      'https://images.unsplash.com/photo-1501973801540-537f08ccae7b?auto=format&fit=crop&w=400&q=80',
-      'https://image.tmdb.org/t/p/w500/q5pXRYTycaeW6dEgsCrd4mYPmxM.jpg',
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
-      'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80',
-    ]
-  },
-  // Tambahkan slide lain sesuai kebutuhan
-]
+import http from '../../lib/http'
+import { NavLink } from 'react-router'
+import { useSelector, useDispatch } from 'react-redux'
+import { fetchSlides, nextSlide, prevSlide, setCurrent } from '../../store/heroSlice'
 
 const HeroSection = () => {
-  const [current, setCurrent] = useState(0)
-  const slide = slides[current]
+  const dispatch = useDispatch()
+  const { slides, current, loading } = useSelector(state => state.hero)
 
-  const prevSlide = () => setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1))
-  const nextSlide = () => setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1))
-
-  // AUTOSCROLL EFFECT
   useEffect(() => {
+    dispatch(fetchSlides())
+  }, [dispatch])
+
+  useEffect(() => {
+    if (!slides.length) return
     const interval = setInterval(() => {
-      nextSlide()
-    }, 4000) // Ganti 4000 jadi 3000 untuk 3 detik, dst
+      dispatch(nextSlide())
+    }, 4000)
     return () => clearInterval(interval)
-  }, [current])
+  }, [current, slides.length, dispatch])
+
+  if (!slides.length) {
+    return <div className="h-screen flex items-center justify-center text-white">Loading...</div>
+  }
+
+  const slide = slides[current]
 
   return (
     <div
@@ -53,40 +36,81 @@ const HeroSection = () => {
         transition: 'background-image 0.5s',
       }}
     >
-      {/* Overlay */}
       <div className="absolute inset-0 bg-black/80"></div>
-      {/* Content */}
-      <div className="relative z-10 flex flex-col justify-center h-full px-16 w-1/2">
-        <h1 className="text-5xl font-bold text-white">{slide.title}</h1>
-        <h2 className="text-4xl font-bold text-green-400 mt-2">{slide.highlight}</h2>
-        <p className="text-white mt-4 mb-8 max-w-md">{slide.desc}</p>
-        {/* Slider Controls */}
-        <div className="flex gap-3">
+      
+      {/* Main Content - Responsive */}
+      <div className="relative z-10 flex flex-col justify-center h-full px-4 sm:px-8 md:px-16 w-full lg:w-1/2">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-400 mt-2">
+          {slide.highlight}
+        </h2>
+        <p className="text-white mt-4 mb-8 max-w-md text-sm sm:text-base line-clamp-5">
+          {slide.desc}
+        </p>
+        
+        {/* Navigation Buttons - Responsive positioning */}
+        <div className="flex gap-3 lg:hidden justify-center">
           <button
-            onClick={prevSlide}
-            className="w-10 h-10 rounded-full bg-green-400 flex items-center justify-center text-white text-2xl hover:bg-green-500 transition"
+            onClick={() => { dispatch(prevSlide())}}
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-400 flex items-center justify-center text-white text-xl sm:text-2xl font-bold leading-none hover:bg-green-500 transition"
             aria-label="Previous"
           >
             &lt;
           </button>
           <button
-            onClick={nextSlide}
-            className="w-10 h-10 rounded-full bg-green-400 flex items-center justify-center text-white text-2xl hover:bg-green-500 transition"
+            onClick={() => { dispatch(nextSlide())}}
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-400 flex items-center justify-center text-white text-xl sm:text-2xl font-bold leading-none hover:bg-green-500 transition"
+            aria-label="Next"
+          >
+            &gt;
+          </button>
+        </div>
+
+        {/* Desktop Navigation Buttons */}
+        <div className="hidden lg:flex gap-3">
+          <button
+            onClick={() => { dispatch(prevSlide())}}
+            className="w-10 h-10 rounded-full bg-green-400 flex items-center justify-center text-white text-2xl font-bold leading-none hover:bg-green-500 transition"
+            aria-label="Previous"
+          >
+            &lt;
+          </button>
+          <button
+            onClick={() => { dispatch(nextSlide())}}
+            className="w-10 h-10 rounded-full bg-green-400 flex items-center justify-center text-white text-2xl font-bold leading-none hover:bg-green-500 transition"
             aria-label="Next"
           >
             &gt;
           </button>
         </div>
       </div>
-      {/* Cards */}
-      <div className="absolute bottom-8 right-16 flex gap-4 z-10">
-        {slide.cards.map((img, idx) => (
-          <img
+
+      {/* Movie Cards - Responsive */}
+      <div className="absolute bottom-4 sm:bottom-8 right-4 sm:right-8 md:right-16 flex gap-2 sm:gap-4 z-10">
+        {slide.cards.slice(0, window.innerWidth < 640 ? 2 : window.innerWidth < 768 ? 3 : 4).map((img, idx) => (
+          <NavLink
             key={idx}
-            src={img}
-            alt=""
-            className="w-32 h-44 object-cover rounded-xl shadow-lg border-4 border-white/30 bg-white/10"
-            style={{ opacity: idx === 0 ? 1 : 0.8 }}
+            to={`/detail/${slide.cardIds[idx]}`}
+            className="focus:outline-none"
+          >
+            <img
+              src={img}
+              alt=""
+              className="w-20 h-28 sm:w-24 sm:h-32 md:w-32 md:h-44 object-cover rounded-lg sm:rounded-xl shadow-lg border-2 sm:border-4 border-white/30 bg-white/10 cursor-pointer hover:scale-105 transition"
+              style={{ opacity: idx === 0 ? 1 : 0.8 }}
+            />
+          </NavLink>
+        ))}
+      </div>
+
+      {/* Dots Indicator - Mobile only */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10 lg:hidden">
+        {slides.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => dispatch(setCurrent(idx))}
+            className={`w-2 h-2 rounded-full transition ${
+              idx === current ? 'bg-green-400' : 'bg-white/50'
+            }`}
           />
         ))}
       </div>
